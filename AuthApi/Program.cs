@@ -61,6 +61,15 @@ namespace AuthApi
             });
             #endregion
 
+            #region Role Configuraion
+            builder.Services.AddAuthorization(ops =>
+            {
+                ops.AddPolicy("ManagerOnly", policy => policy.RequireRole("Manager"));
+                ops.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+                ops.AddPolicy("UserOnly", policy => policy.RequireRole("User"));
+            });
+            #endregion
+
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

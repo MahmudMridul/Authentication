@@ -70,6 +70,19 @@ namespace AuthApi
             });
             #endregion
 
+            #region CORS
+            builder.Services.AddCors(op =>
+                op.AddPolicy(
+                    "AllowAll",
+                    policy => policy
+                    .WithOrigins("http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials()
+                )
+            );
+            #endregion
+
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();

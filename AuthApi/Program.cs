@@ -1,5 +1,6 @@
 
 using AuthApi.Db;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi
@@ -19,6 +20,21 @@ namespace AuthApi
             {
                 ops.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
             });
+            #endregion
+
+            #region Identity Configuration
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>(ops =>
+            {
+                ops.User.RequireUniqueEmail = true;
+
+                ops.Password.RequiredLength = 8;
+                ops.Password.RequireDigit = true;
+                ops.Password.RequireUppercase = true;
+                ops.Password.RequireNonAlphanumeric = true;
+
+            })
+            .AddEntityFrameworkStores<AuthContext>()
+            .AddDefaultTokenProviders();
             #endregion
 
 

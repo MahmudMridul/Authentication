@@ -1,4 +1,7 @@
 
+using AuthApi.Db;
+using Microsoft.EntityFrameworkCore;
+
 namespace AuthApi
 {
     public class Program
@@ -7,10 +10,18 @@ namespace AuthApi
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
+            #region Controller Configuration
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            #endregion
+
+            #region Database Configuration
+            builder.Services.AddDbContext<AuthContext>(ops =>
+            {
+                ops.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
+            });
+            #endregion
+
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 

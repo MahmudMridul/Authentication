@@ -1,0 +1,7 @@
+auth-client/node_modules/*
+auth-client/.vscode/*
+
+AuthApi/.vs/*
+AuthApi/bin/*
+AuthApi/obj/*
+

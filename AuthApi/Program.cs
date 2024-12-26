@@ -98,6 +98,9 @@ namespace AuthApi
 
             app.UseHttpsRedirection();
 
+            // CORS
+            app.UseCors("AllowAll");
+
             app.UseAuthorization();
 
 

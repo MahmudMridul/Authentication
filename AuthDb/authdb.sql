@@ -1,4 +1,4 @@
 use Auth
 
 select *
-from AspNetRoles;
+from Roles;

@@ -1,5 +1,6 @@
 
 using AuthApi.Db;
+using AuthApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,7 @@ namespace AuthApi
             #endregion
 
             #region Identity Configuration
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>(ops =>
+            builder.Services.AddIdentity<User, IdentityRole>(ops =>
             {
                 ops.User.RequireUniqueEmail = true;
 

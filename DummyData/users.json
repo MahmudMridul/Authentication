@@ -1,0 +1,72 @@
+[
+  {
+    "firstName": "User",
+    "lastName": "One",
+    "userName": "UserOne",
+    "email": "user.one@email.com",
+    "password": "user.One1"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Two",
+    "userName": "UserTwo",
+    "email": "user.two@email.com",
+    "password": "user.Two2"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Three",
+    "userName": "UserThree",
+    "email": "user.three@email.com",
+    "password": "user.Three3"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Four",
+    "userName": "UserFour",
+    "email": "user.four@email.com",
+    "password": "user.Four4"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Five",
+    "userName": "UserFive",
+    "email": "user.five@email.com",
+    "password": "user.Five5"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Six",
+    "userName": "UserSix",
+    "email": "user.six@email.com",
+    "password": "user.Six6"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Seven",
+    "userName": "UserSeven",
+    "email": "user.seven@email.com",
+    "password": "user.Seven7"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Eight",
+    "userName": "UserEight",
+    "email": "user.eight@email.com",
+    "password": "user.Eight8"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Nine",
+    "userName": "UserNine",
+    "email": "user.nine@email.com",
+    "password": "user.Nine9"
+  },
+  {
+    "firstName": "User",
+    "lastName": "Ten",
+    "userName": "UserTen",
+    "email": "user.ten@email.com",
+    "password": "user.Ten10"
+  }
+];

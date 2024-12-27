@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using AuthApi.Helpers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AuthApi.Controllers
 {
@@ -156,6 +157,48 @@ namespace AuthApi.Controllers
             {
                 List<string> errs = new List<string> { e.Message, e.StackTrace };
                 res = ApiResponse.Create(HttpStatusCode.InternalServerError, msg: "An unexpected error occurred", errors: errs);
+                return StatusCode((int)HttpStatusCode.InternalServerError, res);
+            }
+        }
+
+        [HttpPost("signout")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponse>> Signout()
+        {
+            ApiResponse res;
+            try
+            {
+                User? user = await _userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    res = ApiResponse.Create(
+                        HttpStatusCode.Unauthorized,
+                        msg: "User not found"
+                    );
+                    return Unauthorized(res);
+                }
+
+                //user.RefreshToken = "";
+                //user.RefreshTokenExpiryTime = DateTime.MinValue;
+
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+                await _signInManager.SignOutAsync();
+
+                res = ApiResponse.Create(
+                    HttpStatusCode.OK,
+                    success: true,
+                    msg: "Sign out successful"
+                );
+                return Ok(res);
+            }
+            catch (Exception ex)
+            {
+                res = ApiResponse.Create(
+                    statusCode: HttpStatusCode.InternalServerError,
+                    msg: "An error occurred during sign out",
+                    errors: new List<string> { ex.Message, ex.StackTrace }
+                );
                 return StatusCode((int)HttpStatusCode.InternalServerError, res);
             }
         }

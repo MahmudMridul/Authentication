@@ -8,5 +8,7 @@ namespace AuthApi.Models
         public string LastName { get; set; } = string.Empty;
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }
+        public string RefreshToken { get; set; } = string.Empty;
+        public DateTime RefreshTokenExpiryTime { get; set; }
     }
 }

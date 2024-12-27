@@ -36,6 +36,9 @@ namespace AuthApi
                 ops.Password.RequireUppercase = true;
                 ops.Password.RequireNonAlphanumeric = true;
 
+                ops.Lockout.AllowedForNewUsers = true;
+                ops.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                ops.Lockout.MaxFailedAccessAttempts = 3;
             })
             .AddEntityFrameworkStores<AuthContext>()
             .AddDefaultTokenProviders();

@@ -1,11 +1,11 @@
 ﻿using AuthApi.Db;
 using AuthApi.Models;
 using AuthApi.Models.Dtos;
+using AuthApi.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
-using AuthApi.Helpers;
 using Microsoft.AspNetCore.Authorization;
 
 namespace AuthApi.Controllers
@@ -133,35 +133,19 @@ namespace AuthApi.Controllers
                     return Unauthorized(res);
                 }
 
-                string accessToken = await TokenHelper.GenerateJwtToken(user, _userManager, _config);
-                (string refreshToken, DateTime expiration) = TokenHelper.GenerateRefreshToken();
+                string accessToken = await TokenService.GenerateJwtToken(user, _userManager, _config);
+                (string refreshToken, DateTime expiration) = TokenService.GenerateRefreshToken();
 
-                //user.RefreshToken = refreshToken;
-                //user.RefreshTokenExpiryTime = expiration;
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = expiration;
 
                 _context.Users.Update(user);
                 await _context.SaveChangesAsync();
 
-                var accessTokenOps = new CookieOptions
-                {
-                    HttpOnly = true,       // Prevents access via JavaScript
-                    Secure = true,         // Ensures the cookie is only sent over HTTPS
-                    SameSite = SameSiteMode.None,  // Prevents CSRF attacks
-                    Expires = DateTime.UtcNow.AddHours(1)  // Set the expiration of the token (optional)
-                };
-
-                // Append the token to the response as a cookie
+                var accessTokenOps = TokenService.GetCookieOptions(1);
                 Response.Cookies.Append("AccessToken", accessToken, accessTokenOps);
 
-                var refreshTokenOps = new CookieOptions
-                {
-                    HttpOnly = true,       // Prevents access via JavaScript
-                    Secure = true,         // Ensures the cookie is only sent over HTTPS
-                    SameSite = SameSiteMode.None,  // Prevents CSRF attacks
-                    Expires = DateTime.UtcNow.AddDays(7)  // Set the expiration of the token (optional)
-                };
-
-                // Append the token to the response as a cookie
+                var refreshTokenOps = TokenService.GetCookieOptions(7, false);
                 Response.Cookies.Append("RefreshToken", refreshToken, refreshTokenOps);
 
                 res = ApiResponse.Create(

@@ -6,9 +6,9 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace AuthApi.Helpers
+namespace AuthApi.Services
 {
-    public class TokenHelper
+    public class TokenService
     {
         public static async Task<string> GenerateJwtToken(User user, UserManager<User> userManager, IConfiguration config)
         {
@@ -48,6 +48,17 @@ namespace AuthApi.Helpers
                 var expiration = DateTime.UtcNow.Add(TimeSpan.FromDays(7));
                 return (token, expiration);
             }
+        }
+
+        public static CookieOptions GetCookieOptions(int timeSpan, bool isHours = true)
+        {
+            return new CookieOptions
+            {
+                HttpOnly = true,       // Prevents access via JavaScript
+                Secure = true,         // Ensures the cookie is only sent over HTTPS
+                SameSite = SameSiteMode.Lax,
+                Expires = isHours ? DateTime.UtcNow.AddHours(timeSpan) : DateTime.UtcNow.AddDays(timeSpan)
+            };
         }
     }
 }

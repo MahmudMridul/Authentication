@@ -38,7 +38,7 @@ namespace AuthApi
 
                 ops.Lockout.AllowedForNewUsers = true;
                 ops.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
-                ops.Lockout.MaxFailedAccessAttempts = 3;
+                ops.Lockout.MaxFailedAccessAttempts = 5;
             })
             .AddEntityFrameworkStores<AuthContext>()
             .AddDefaultTokenProviders();

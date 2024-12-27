@@ -55,6 +55,8 @@ namespace AuthApi.Controllers
                     LastName = model.LastName,
                     Created = DateTime.UtcNow,
                     Updated = DateTime.UtcNow,
+                    AccessFailedCount = 0,
+                    LockoutEnabled = true,
                 };
 
                 IdentityResult result = await _userManager.CreateAsync(user, model.Password);
@@ -98,11 +100,36 @@ namespace AuthApi.Controllers
                     return NotFound(res);
                 }
 
-                SignInResult result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+                if (await _userManager.IsLockedOutAsync(user))
+                {
+                    DateTimeOffset? lockoutEnd = await _userManager.GetLockoutEndDateAsync(user);
+                    TimeSpan remainingTime = lockoutEnd.HasValue ?
+                        lockoutEnd.Value.Subtract(DateTimeOffset.UtcNow) :
+                        TimeSpan.Zero;
+
+                    res = ApiResponse.Create(HttpStatusCode.Unauthorized,
+                        msg: $"Account is locked. Try again in {remainingTime.Minutes} minutes.");
+                    return Unauthorized(res);
+                }
+
+                SignInResult result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, true);
 
                 if (!result.Succeeded)
                 {
-                    res = ApiResponse.Create(HttpStatusCode.Unauthorized, msg: "Invalid username or password");
+                    int maxAttempts = 5;
+                    int failedCount = await _userManager.GetAccessFailedCountAsync(user);
+                    int attemptsLeft = maxAttempts - failedCount;
+
+                    if (result.IsLockedOut)
+                    {
+                        res = ApiResponse.Create(HttpStatusCode.Unauthorized,
+                            msg: "Account has been locked due to too many failed attempts. Try again in 5 minutes.");
+                    }
+                    else
+                    {
+                        res = ApiResponse.Create(HttpStatusCode.Unauthorized,
+                            msg: $"Invalid username or password. {attemptsLeft} attempts remaining before lockout.");
+                    }
                     return Unauthorized(res);
                 }
 

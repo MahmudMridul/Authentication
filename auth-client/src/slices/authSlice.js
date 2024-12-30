@@ -1,3 +1,4 @@
+import { signup } from "@/helpers/apis";
 import { apis } from "@/helpers/apis";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
@@ -5,11 +6,10 @@ const initialState = {
 	loading: false,
 };
 
-export const signUp = createAsyncThunk("auth/signin", async (payload) => {
+export const signUp = createAsyncThunk("auth/signup", async (payload) => {
 	try {
 		console.log(payload);
-		const url = apis.signUp;
-		const res = fetch(url, {
+		const res = fetch(signup, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -112,5 +112,5 @@ export const authSlice = createSlice({
 	},
 });
 
-export const { set } = authSlice.actions;
+export const { set, setLoading } = authSlice.actions;
 export default authSlice.reducer;

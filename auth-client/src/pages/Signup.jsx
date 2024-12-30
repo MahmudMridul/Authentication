@@ -11,16 +11,19 @@ import {
 	isValidUsername,
 } from "@/helpers/functions";
 import { useToast } from "@/hooks/use-toast";
-import { Eye } from "lucide-react";
+import { signUp } from "@/slices/authSlice";
+import { Eye, LoaderCircle } from "lucide-react";
 import { EyeClosed } from "lucide-react";
-// import { signUp } from "@/slices/authSlice";
 import { useState } from "react";
-// import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { NavLink } from "react-router";
 
 export default function Signup() {
-	// const dispatch = useDispatch();
+	const dispatch = useDispatch();
 	const { toast } = useToast();
+	const states = useSelector((store) => store.auth);
+	const { loading } = states;
 
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
@@ -146,8 +149,7 @@ export default function Signup() {
 			firstName,
 			lastName,
 		};
-		console.log(payload);
-		// dispatch(signUp(payload));
+		dispatch(signUp(payload));
 	}
 
 	return (
@@ -228,7 +230,15 @@ export default function Signup() {
 					<Button variant="link">
 						<NavLink to="/">Sign in</NavLink>
 					</Button>
-					<Button onClick={handleSignUp}>Sign up</Button>
+					<Button onClick={handleSignUp}>
+						{loading ? (
+							<>
+								<LoaderCircle className="animate-spin" /> Loading...
+							</>
+						) : (
+							"Sign up"
+						)}
+					</Button>
 				</div>
 			</div>
 		</div>

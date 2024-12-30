@@ -6,9 +6,12 @@ export function isValidName(name) {
 
 export function isValidUsername(username) {
 	const hasAlphabets = /[A-Za-z]/.test(username); // Check for alphabets
-	const hasNumbers = /[0-9]/.test(username); // Check for numbers
-	const hasSpecialChars = /[^A-Za-z0-9]/.test(username); // Check for special characters
-	return hasAlphabets && hasNumbers && hasSpecialChars;
+	return (
+		hasAlphabets &&
+		hasNumber(username) &&
+		hasSpecialChar(username) &&
+		!hasSpace(username)
+	);
 }
 
 export function isValidEmail(email) {
@@ -44,4 +47,8 @@ export function hasNumber(str) {
 
 export function hasSpecialChar(str) {
 	return /[^A-Za-z0-9]/.test(str);
+}
+
+export function hasSpace(str) {
+	return /\s/.test(str);
 }

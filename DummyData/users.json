@@ -9,63 +9,63 @@
   {
     "firstName": "User",
     "lastName": "Two",
-    "userName": "UserTwo",
+    "userName": "UserTwo@2",
     "email": "user.two@email.com",
     "password": "user.Two2"
   },
   {
     "firstName": "User",
     "lastName": "Three",
-    "userName": "UserThree",
+    "userName": "UserThree@3",
     "email": "user.three@email.com",
     "password": "user.Three3"
   },
   {
     "firstName": "User",
     "lastName": "Four",
-    "userName": "UserFour",
+    "userName": "UserFour@4",
     "email": "user.four@email.com",
     "password": "user.Four4"
   },
   {
     "firstName": "User",
     "lastName": "Five",
-    "userName": "UserFive",
+    "userName": "UserFive@5",
     "email": "user.five@email.com",
     "password": "user.Five5"
   },
   {
     "firstName": "User",
     "lastName": "Six",
-    "userName": "UserSix",
+    "userName": "UserSix@6",
     "email": "user.six@email.com",
     "password": "user.Six6"
   },
   {
     "firstName": "User",
     "lastName": "Seven",
-    "userName": "UserSeven",
+    "userName": "UserSeven@7",
     "email": "user.seven@email.com",
     "password": "user.Seven7"
   },
   {
     "firstName": "User",
     "lastName": "Eight",
-    "userName": "UserEight",
+    "userName": "UserEight@8",
     "email": "user.eight@email.com",
     "password": "user.Eight8"
   },
   {
     "firstName": "User",
     "lastName": "Nine",
-    "userName": "UserNine",
+    "userName": "UserNine@9",
     "email": "user.nine@email.com",
     "password": "user.Nine9"
   },
   {
     "firstName": "User",
     "lastName": "Ten",
-    "userName": "UserTen",
+    "userName": "UserTen@10",
     "email": "user.ten@email.com",
     "password": "user.Ten10"
   }

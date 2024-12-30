@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Microsoft.AspNetCore.Authorization;
+using System.Text;
+using System.Runtime.InteropServices;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Controllers
 {
@@ -40,10 +43,12 @@ namespace AuthApi.Controllers
                     return BadRequest(res);
                 }
 
-                var existing = await _userManager.FindByNameAsync(model.UserName);
-                if (existing != null)
+                var existingUser = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == model.UserName || u.Email == model.Email);
+
+                if (existingUser != null)
                 {
-                    res = ApiResponse.Create(HttpStatusCode.Conflict, msg: "User already exists");
+                    string conflictField = existingUser.UserName == model.UserName ? "Username" : "Email";
+                    res = ApiResponse.Create(HttpStatusCode.Conflict, msg: $"{conflictField} already exists");
                     return Conflict(res);
                 }
 
@@ -63,8 +68,14 @@ namespace AuthApi.Controllers
 
                 if (!result.Succeeded)
                 {
-                    List<string> errors = result.Errors.Select(e => e.Description).ToList();
-                    res = ApiResponse.Create(HttpStatusCode.BadRequest, msg: "Signup failed", errors: errors);
+                    List<string> errorMsg = result.Errors.Select(e => e.Description).ToList();
+                    StringBuilder sb = new StringBuilder();
+                    sb.AppendLine("Signup failed");
+                    foreach (string err in errorMsg)
+                    {
+                        sb.AppendLine(err);
+                    }
+                    res = ApiResponse.Create(HttpStatusCode.BadRequest, msg: sb.ToString());
                     return BadRequest(res);
                 }
 

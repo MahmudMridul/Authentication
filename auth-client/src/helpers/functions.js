@@ -1,7 +1,7 @@
 export function isValidName(name) {
-	// Check if the name contains only alphabets
-	const hasAlphabets = /^[A-Za-z]+$/.test(name);
-	return hasAlphabets;
+	// Check if the name contains only alphabets and spaces
+	const hasAlphabetsAndSpaces = /^[A-Za-z\s]+$/.test(name);
+	return hasAlphabetsAndSpaces;
 }
 
 export function isValidUsername(username) {

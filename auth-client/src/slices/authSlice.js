@@ -1,5 +1,5 @@
 import { signup } from "@/helpers/apis";
-import { apis } from "@/helpers/apis";
+import { signin } from "@/helpers/apis";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
@@ -8,8 +8,7 @@ const initialState = {
 
 export const signUp = createAsyncThunk("auth/signup", async (payload) => {
 	try {
-		console.log(payload);
-		const res = fetch(signup, {
+		const res = await fetch(signup, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -22,17 +21,8 @@ export const signUp = createAsyncThunk("auth/signup", async (payload) => {
 			console.error(`https status error ${res.status} ${res.statusText}`);
 		}
 
-		const text = await res.text();
-		if (!text) {
-			console.error("Empty response");
-		}
-
-		try {
-			const data = JSON.parse(text);
-			return data;
-		} catch (parseError) {
-			console.error("Failed to parse JSON", text, parseError);
-		}
+		const data = await res.json();
+		return data;
 	} catch (err) {
 		console.error("auth/signUp", err);
 	}
@@ -40,14 +30,12 @@ export const signUp = createAsyncThunk("auth/signup", async (payload) => {
 
 export const signIn = createAsyncThunk("auth/signin", async ({ payload }) => {
 	try {
-		const url = apis.signIn;
-		const res = fetch(url, {
+		const res = await fetch(signin, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
 				Accept: "application/json",
 			},
-			credentials: "include",
 			body: JSON.stringify({ payload }),
 		});
 
@@ -55,17 +43,8 @@ export const signIn = createAsyncThunk("auth/signin", async ({ payload }) => {
 			console.error(`https status error ${res.status} ${res.statusText}`);
 		}
 
-		const text = await res.text();
-		if (!text) {
-			console.error("Empty response");
-		}
-
-		try {
-			const data = JSON.parse(text);
-			return data;
-		} catch (parseError) {
-			console.error("Failed to parse JSON", text, parseError);
-		}
+		const data = await res.json();
+		return data;
 	} catch (err) {
 		console.error("auth/signIn", err);
 	}
@@ -93,8 +72,9 @@ export const authSlice = createSlice({
 			.addCase(signUp.pending, (state) => {
 				state.loading = true;
 			})
-			.addCase(signUp.fulfilled, (state) => {
+			.addCase(signUp.fulfilled, (state, action) => {
 				state.loading = false;
+				console.log(action.payload);
 			})
 			.addCase(signUp.rejected, (state) => {
 				state.loading = false;

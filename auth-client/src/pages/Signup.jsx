@@ -30,36 +30,73 @@ export default function Signup() {
 	const [userName, setUsername] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
-	const [invalidUsername, setInvalidUsername] = useState(false);
-	const [invalidEmail, setInvalidEmail] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
-	const [minLength, setMinLength] = useState(false);
-	const [upperCase, setUpperCase] = useState(false);
-	const [lowerCase, setLowerCase] = useState(false);
-	const [number, setNumber] = useState(false);
-	const [specialChar, setSpecialChar] = useState(false);
+	const [minLength, setMinLength] = useState(true);
+	const [upperCase, setUpperCase] = useState(true);
+	const [lowerCase, setLowerCase] = useState(true);
+	const [number, setNumber] = useState(true);
+	const [specialChar, setSpecialChar] = useState(true);
+
+	const [validFirstName, setValidFirstName] = useState(true);
+	const [validLastName, setValidLastName] = useState(true);
+	const [validUsername, setValidUsername] = useState(true);
+	const [validEmail, setValidEmail] = useState(true);
+
+	const validInput =
+		firstName.length > 0 &&
+		validFirstName &&
+		lastName.length > 0 &&
+		validLastName &&
+		userName.length > 0 &&
+		validUsername &&
+		email.length > 0 &&
+		validEmail &&
+		minLength &&
+		upperCase &&
+		lowerCase &&
+		number &&
+		specialChar;
 
 	function handleFirstName(e) {
 		let v = e.target.value;
+
+		if (v === "") {
+			setValidFirstName(true);
+			setFirstName(v);
+			return;
+		}
+
 		if (!isValidName(v)) {
+			setValidFirstName(false);
 			toast({
-				description: "First name should contain alphabets only",
+				description: "First name should contain alphabets and spaces only",
 				variant: "destructive",
 			});
 			return;
 		}
+
+		setValidFirstName(true);
 		setFirstName(v);
 	}
 
 	function handleLastName(e) {
 		let v = e.target.value;
+
+		if (v === "") {
+			setValidLastName(true);
+			setLastName(v);
+			return;
+		}
+
 		if (!isValidName(v)) {
+			setValidLastName(false);
 			toast({
-				description: "Last name should contain alphabets only",
+				description: "Last name should contain alphabets and spaces only",
 				variant: "destructive",
 			});
 			return;
 		}
+		setValidLastName(true);
 		setLastName(v);
 	}
 
@@ -67,15 +104,15 @@ export default function Signup() {
 		let v = e.target.value;
 
 		if (v === "") {
-			setInvalidUsername(false);
+			setValidUsername(true);
 			setUsername(v);
 			return;
 		}
 
 		if (!isValidUsername(v)) {
-			setInvalidUsername(true);
+			setValidUsername(false);
 		} else {
-			setInvalidUsername(false);
+			setValidUsername(true);
 		}
 		setUsername(v);
 	}
@@ -84,15 +121,15 @@ export default function Signup() {
 		let v = e.target.value;
 
 		if (v === "") {
-			setInvalidEmail(false);
+			setValidEmail(true);
 			setEmail(v);
 			return;
 		}
 
 		if (!isValidEmail(v)) {
-			setInvalidEmail(true);
+			setValidEmail(false);
 		} else {
-			setInvalidEmail(false);
+			setValidEmail(true);
 		}
 		setEmail(v);
 	}
@@ -100,43 +137,43 @@ export default function Signup() {
 		let v = e.target.value;
 
 		if (v === "") {
-			setMinLength(false);
-			setUpperCase(false);
-			setLowerCase(false);
-			setNumber(false);
-			setSpecialChar(false);
+			setMinLength(true);
+			setUpperCase(true);
+			setLowerCase(true);
+			setNumber(true);
+			setSpecialChar(true);
 			setPassword(v);
 			return;
 		}
 
 		if (!hasMinLength(v)) {
-			setMinLength(true);
-		} else {
 			setMinLength(false);
+		} else {
+			setMinLength(true);
 		}
 
 		if (!hasUpperCase(v)) {
-			setUpperCase(true);
-		} else {
 			setUpperCase(false);
+		} else {
+			setUpperCase(true);
 		}
 
 		if (!hasLowerCase(v)) {
-			setLowerCase(true);
-		} else {
 			setLowerCase(false);
+		} else {
+			setLowerCase(true);
 		}
 
 		if (!hasNumber(v)) {
-			setNumber(true);
-		} else {
 			setNumber(false);
+		} else {
+			setNumber(true);
 		}
 
 		if (!hasSpecialChar(v)) {
-			setSpecialChar(true);
-		} else {
 			setSpecialChar(false);
+		} else {
+			setSpecialChar(true);
 		}
 		setPassword(v);
 	}
@@ -149,7 +186,14 @@ export default function Signup() {
 			firstName,
 			lastName,
 		};
-		dispatch(signUp(payload));
+		dispatch(signUp(payload)).then((res) => {
+			if (!res.payload.success) {
+				toast({
+					description: res.payload.message,
+					variant: "destructive",
+				});
+			}
+		});
 	}
 
 	return (
@@ -175,10 +219,11 @@ export default function Signup() {
 				/>
 				<div
 					className={`text-xs text-rose-600 ${
-						invalidUsername ? "block" : "hidden"
+						validUsername ? "hidden" : "block"
 					}`}
 				>
-					Username should contain alphabets, numbers and special characters
+					Username should contain alphabets, numbers, special characters and no
+					space
 				</div>
 				<Input
 					type="email"
@@ -187,9 +232,7 @@ export default function Signup() {
 					onChange={handleEmail}
 				/>
 				<div
-					className={`text-xs text-rose-600 ${
-						invalidEmail ? "block" : "hidden"
-					}`}
+					className={`text-xs text-rose-600 ${validEmail ? "hidden" : "block"}`}
 				>
 					Email should be in the format of email@example.com
 				</div>
@@ -210,19 +253,19 @@ export default function Signup() {
 					</Button>
 				</div>
 				<div className="text-xs text-rose-600">
-					<div className={`${minLength ? "block" : "hidden"}`}>
+					<div className={`${minLength ? "hidden" : "block"}`}>
 						Password should contain at least 8 characters
 					</div>
-					<div className={`${upperCase ? "block" : "hidden"}`}>
+					<div className={`${upperCase ? "hidden" : "block"}`}>
 						Password should contain at least 1 uppercase letter
 					</div>
-					<div className={`${lowerCase ? "block" : "hidden"}`}>
+					<div className={`${lowerCase ? "hidden" : "block"}`}>
 						Password should contain at least 1 lowercase letter
 					</div>
-					<div className={`${number ? "block" : "hidden"}`}>
+					<div className={`${number ? "hidden" : "block"}`}>
 						Password should contain at least 1 number
 					</div>
-					<div className={`${specialChar ? "block" : "hidden"}`}>
+					<div className={`${specialChar ? "hidden" : "block"}`}>
 						Password should contain at least 1 special character
 					</div>
 				</div>
@@ -230,7 +273,7 @@ export default function Signup() {
 					<Button variant="link">
 						<NavLink to="/">Sign in</NavLink>
 					</Button>
-					<Button onClick={handleSignUp}>
+					<Button onClick={handleSignUp} disabled={!validInput}>
 						{loading ? (
 							<>
 								<LoaderCircle className="animate-spin" /> Loading...

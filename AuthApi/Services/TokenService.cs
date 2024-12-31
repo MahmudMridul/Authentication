@@ -56,7 +56,7 @@ namespace AuthApi.Services
             {
                 HttpOnly = true,       // Prevents access via JavaScript
                 Secure = true,         // Ensures the cookie is only sent over HTTPS
-                SameSite = SameSiteMode.Lax,
+                SameSite = SameSiteMode.None,
                 Expires = isHours ? DateTime.UtcNow.AddHours(timeSpan) : DateTime.UtcNow.AddDays(timeSpan)
             };
         }

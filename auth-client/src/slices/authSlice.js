@@ -36,6 +36,7 @@ export const signIn = createAsyncThunk("auth/signin", async (payload) => {
 				"Content-Type": "application/json",
 				Accept: "application/json",
 			},
+			credentials: "include",
 			body: JSON.stringify(payload),
 		});
 

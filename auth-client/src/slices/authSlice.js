@@ -83,8 +83,9 @@ export const authSlice = createSlice({
 			.addCase(signIn.pending, (state) => {
 				state.loading = true;
 			})
-			.addCase(signIn.fulfilled, (state) => {
+			.addCase(signIn.fulfilled, (state, action) => {
 				state.loading = false;
+				console.log(action.payload);
 			})
 			.addCase(signIn.rejected, (state) => {
 				state.loading = false;

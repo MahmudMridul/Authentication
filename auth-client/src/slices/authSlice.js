@@ -28,7 +28,7 @@ export const signUp = createAsyncThunk("auth/signup", async (payload) => {
 	}
 });
 
-export const signIn = createAsyncThunk("auth/signin", async ({ payload }) => {
+export const signIn = createAsyncThunk("auth/signin", async (payload) => {
 	try {
 		const res = await fetch(signin, {
 			method: "POST",
@@ -36,7 +36,7 @@ export const signIn = createAsyncThunk("auth/signin", async ({ payload }) => {
 				"Content-Type": "application/json",
 				Accept: "application/json",
 			},
-			body: JSON.stringify({ payload }),
+			body: JSON.stringify(payload),
 		});
 
 		if (!res.ok) {

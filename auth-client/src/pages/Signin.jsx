@@ -1,10 +1,17 @@
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { isValidEmail, isValidUsername } from "@/helpers/functions";
+import { useDispatch } from "react-redux";
+import { signIn } from "@/slices/authSlice";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Signin() {
+	const dispatch = useDispatch();
+	const { toast } = useToast();
+	const navigate = useNavigate();
+
 	const [nameOrEmail, setNameOrEmail] = useState("");
 	const [password, setPassword] = useState("");
 
@@ -23,7 +30,26 @@ export default function Signin() {
 		setPassword(v);
 	}
 
-	function handleSignin() {}
+	function handleSignin() {
+		const payload = {
+			nameOrEmail,
+			password,
+		};
+		dispatch(signIn(payload)).then((res) => {
+			let variant = res.payload.success ? "default" : "destructive";
+			toast({
+				description: res.payload.message,
+				variant: variant,
+			});
+
+			if (res.payload.success) {
+				navigate("/home");
+			} else {
+				navigate("/");
+			}
+		});
+	}
+
 	return (
 		<div className="container mx-auto h-screen p-5 flex justify-center items-center">
 			<div className="w-1/5">

@@ -51,6 +51,7 @@ export default function Signup() {
 		validUsername &&
 		email.length > 0 &&
 		validEmail &&
+		password.length >= 8 &&
 		minLength &&
 		upperCase &&
 		lowerCase &&
@@ -68,14 +69,10 @@ export default function Signup() {
 
 		if (!isValidName(v)) {
 			setValidFirstName(false);
-			toast({
-				description: "First name should contain alphabets and spaces only",
-				variant: "destructive",
-			});
-			return;
+		} else {
+			setValidFirstName(true);
 		}
 
-		setValidFirstName(true);
 		setFirstName(v);
 	}
 
@@ -90,13 +87,9 @@ export default function Signup() {
 
 		if (!isValidName(v)) {
 			setValidLastName(false);
-			toast({
-				description: "Last name should contain alphabets and spaces only",
-				variant: "destructive",
-			});
-			return;
+		} else {
+			setValidLastName(true);
 		}
-		setValidLastName(true);
 		setLastName(v);
 	}
 
@@ -205,12 +198,26 @@ export default function Signup() {
 					value={firstName}
 					onChange={handleFirstName}
 				/>
+				<div
+					className={`text-xs text-rose-600 ${
+						validFirstName ? "hidden" : "block"
+					}`}
+				>
+					First name should contain alphabets and spaces only
+				</div>
 				<Input
 					type="text"
 					placeholder="Last Name"
 					value={lastName}
 					onChange={handleLastName}
 				/>
+				<div
+					className={`text-xs text-rose-600 ${
+						validLastName ? "hidden" : "block"
+					}`}
+				>
+					Last name should contain alphabets and spaces only
+				</div>
 				<Input
 					type="text"
 					placeholder="Username"

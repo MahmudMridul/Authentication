@@ -180,12 +180,11 @@ export default function Signup() {
 			lastName,
 		};
 		dispatch(signUp(payload)).then((res) => {
-			if (!res.payload.success) {
-				toast({
-					description: res.payload.message,
-					variant: "destructive",
-				});
-			}
+			let variant = res.payload.success ? "default" : "destructive";
+			toast({
+				description: res.payload.message,
+				variant: variant,
+			});
 		});
 	}
 

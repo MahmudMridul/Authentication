@@ -104,7 +104,7 @@ namespace AuthApi.Controllers
                     return BadRequest(res);
                 }
 
-                User? user = await _userManager.FindByNameAsync(model.UserName);
+                User? user = await _userManager.Users.FirstOrDefaultAsync(u => u.UserName == model.NameOrEmail || u.Email == model.NameOrEmail);
                 if (user == null)
                 {
                     res = ApiResponse.Create(HttpStatusCode.NotFound, msg: "No user found with this username");

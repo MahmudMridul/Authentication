@@ -1,5 +1,6 @@
 import { signup } from "@/helpers/apis";
 import { signin } from "@/helpers/apis";
+import { isAuth } from "@/helpers/apis";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
@@ -51,6 +52,28 @@ export const signIn = createAsyncThunk("auth/signin", async (payload) => {
 	}
 });
 
+export const checkAuth = createAsyncThunk("auth/checkAuth", async () => {
+	try {
+		const res = await fetch(isAuth, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			credentials: "include",
+		});
+
+		if (!res.ok) {
+			console.error(`https status error ${res.status} ${res.statusText}`);
+		}
+
+		const data = await res.json();
+		return data;
+	} catch (err) {
+		console.error("auth/checkAuth", err);
+	}
+});
+
 export const authSlice = createSlice({
 	name: "auth",
 	initialState,
@@ -89,6 +112,17 @@ export const authSlice = createSlice({
 				console.log(action.payload);
 			})
 			.addCase(signIn.rejected, (state) => {
+				state.loading = false;
+			})
+
+			.addCase(checkAuth.pending, (state) => {
+				state.loading = true;
+			})
+			.addCase(checkAuth.fulfilled, (state, action) => {
+				state.loading = false;
+				console.log(action.payload);
+			})
+			.addCase(checkAuth.rejected, (state) => {
 				state.loading = false;
 			});
 	},

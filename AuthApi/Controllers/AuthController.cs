@@ -183,6 +183,38 @@ namespace AuthApi.Controllers
             }
         }
 
+        [HttpGet("is-authenticated")]
+        public async Task<ActionResult<ApiResponse>> IsAuthenticated()
+        {
+            ApiResponse res;
+            try
+            {
+                string? accessToken = Request.Cookies["AccessToken"];
+
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    res = ApiResponse.Create(
+                        HttpStatusCode.Unauthorized,
+                        msg: "Access token not found"
+                    );
+                    return Unauthorized(res);
+                }
+
+                res = ApiResponse.Create(
+                    HttpStatusCode.OK,
+                    success: true,
+                    msg: "User is authenticated"
+                );
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+                List<string> errs = new List<string> { e.Message, e.StackTrace };
+                res = ApiResponse.Create(HttpStatusCode.InternalServerError, msg: "An unexpected error occurred", errors: errs);
+                return StatusCode((int)HttpStatusCode.InternalServerError, res);
+            }
+        }
+
         [HttpPost("signout")]
         [Authorize]
         public async Task<ActionResult<ApiResponse>> Signout()

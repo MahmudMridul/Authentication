@@ -48,6 +48,7 @@ export default function Signin() {
 			});
 
 			if (res.payload.success) {
+				// setIsAuthenticated(true);
 				console.log("Signin successful");
 				navigate("/home");
 			} else {

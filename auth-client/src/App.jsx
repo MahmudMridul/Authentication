@@ -4,27 +4,24 @@ import Signup from "./pages/Signup";
 import { Toaster } from "./components/ui/toaster";
 import Home from "./pages/Home";
 import ProtectedRoute from "./components/custom/ProtectedRoute";
-import { AuthProvider } from "./contexts/authContext";
 
 export default function App() {
 	return (
 		<>
 			<Toaster />
 			<BrowserRouter>
-				<AuthProvider>
-					<Routes>
-						<Route path="/" element={<Signin />} />
-						<Route path="/signup" element={<Signup />} />
-						<Route
-							path="/home"
-							element={
-								<ProtectedRoute>
-									<Home />
-								</ProtectedRoute>
-							}
-						/>
-					</Routes>
-				</AuthProvider>
+				<Routes>
+					<Route path="/" element={<Signin />} />
+					<Route path="/signup" element={<Signup />} />
+					<Route
+						path="/home"
+						element={
+							<ProtectedRoute>
+								<Home />
+							</ProtectedRoute>
+						}
+					/>
+				</Routes>
 			</BrowserRouter>
 		</>
 	);

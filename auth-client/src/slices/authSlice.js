@@ -5,6 +5,8 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
 	loading: false,
+
+	isAuthenticated: false,
 };
 
 export const signUp = createAsyncThunk("auth/signup", async (payload) => {
@@ -109,7 +111,9 @@ export const authSlice = createSlice({
 			})
 			.addCase(signIn.fulfilled, (state, action) => {
 				state.loading = false;
-				console.log(action.payload);
+				if (action.payload.success) {
+					state.isAuthenticated = true;
+				}
 			})
 			.addCase(signIn.rejected, (state) => {
 				state.loading = false;

@@ -6,7 +6,7 @@ import { isValidEmail, isValidUsername } from "@/helpers/functions";
 import { useDispatch, useSelector } from "react-redux";
 import { signIn } from "@/slices/authSlice";
 import { useToast } from "@/hooks/use-toast";
-import { LoaderCircle } from "lucide-react";
+import { Eye, EyeClosed, LoaderCircle } from "lucide-react";
 
 export default function Signin() {
 	const dispatch = useDispatch();
@@ -18,6 +18,7 @@ export default function Signin() {
 
 	const [nameOrEmail, setNameOrEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [showPassword, setShowPassword] = useState(false);
 
 	const validInput =
 		nameOrEmail.length > 0 &&
@@ -63,20 +64,26 @@ export default function Signin() {
 					value={nameOrEmail}
 					onChange={handleNameOrEmail}
 				/>
-				<Input
-					type="password"
-					placeholder="Password"
-					value={password}
-					onChange={handlePassword}
-				/>
+				<div className="flex">
+					<Input
+						type={showPassword ? "text" : "password"}
+						placeholder="Password"
+						value={password}
+						onChange={handlePassword}
+					/>
+					<Button
+						variant="ghost"
+						size="sm"
+						className="mt-2 ml-2"
+						onClick={() => setShowPassword(!showPassword)}
+					>
+						{showPassword ? <Eye /> : <EyeClosed />}
+					</Button>
+				</div>
 				<div className="flex justify-between">
 					<Button variant="link">
 						<NavLink to="/signup">Sign up</NavLink>
 					</Button>
-					<Button onClick={handleSignin} disabled={!validInput}>
-						Sign in
-					</Button>
-
 					<Button onClick={handleSignin} disabled={!validInput}>
 						{loading ? (
 							<>

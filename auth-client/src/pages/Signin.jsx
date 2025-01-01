@@ -3,14 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { isValidEmail, isValidUsername } from "@/helpers/functions";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { signIn } from "@/slices/authSlice";
 import { useToast } from "@/hooks/use-toast";
+import { LoaderCircle } from "lucide-react";
 
 export default function Signin() {
 	const dispatch = useDispatch();
 	const { toast } = useToast();
 	const navigate = useNavigate();
+
+	const states = useSelector((store) => store.auth);
+	const { loading } = states;
 
 	const [nameOrEmail, setNameOrEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -71,6 +75,16 @@ export default function Signin() {
 					</Button>
 					<Button onClick={handleSignin} disabled={!validInput}>
 						Sign in
+					</Button>
+
+					<Button onClick={handleSignin} disabled={!validInput}>
+						{loading ? (
+							<>
+								<LoaderCircle className="animate-spin" /> Loading...
+							</>
+						) : (
+							"Sign in"
+						)}
 					</Button>
 				</div>
 			</div>

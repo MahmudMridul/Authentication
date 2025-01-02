@@ -10,6 +10,8 @@ namespace AuthApi.Db
     {
         public AuthContext(DbContextOptions<AuthContext> options) : base(options) { }
 
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);

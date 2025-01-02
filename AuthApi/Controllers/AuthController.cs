@@ -8,7 +8,6 @@ using System.Net;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Microsoft.AspNetCore.Authorization;
 using System.Text;
-using System.Runtime.InteropServices;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Controllers
@@ -145,19 +144,49 @@ namespace AuthApi.Controllers
                 }
 
                 string accessToken = await TokenService.GenerateJwtToken(user, _userManager, _config);
-                (string refreshToken, DateTime expiration) = TokenService.GenerateRefreshToken();
+                string? storedToken = Request.Cookies["RefreshToken"];
+                RefreshToken? refreshToken = await _context.RefreshTokens.Include(r => r.User).FirstOrDefaultAsync(r => r.Token == storedToken);
 
-                user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiryTime = expiration;
-
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
-
-                var accessTokenOps = TokenService.GetCookieOptions(1);
-                Response.Cookies.Append("AccessToken", accessToken, accessTokenOps);
-
-                var refreshTokenOps = TokenService.GetCookieOptions(7, false);
-                Response.Cookies.Append("RefreshToken", refreshToken, refreshTokenOps);
+                // there is a refresh token in the cookie
+                if (!string.IsNullOrEmpty(storedToken))
+                {
+                    if (RefreshTokenBelongsToUser(user, refreshToken))
+                    {
+                        if (refreshToken.Expires < DateTime.UtcNow)
+                        {
+                            // refresh token has expired. generate a new one
+                            (string token, DateTime expiration) = TokenService.GenerateRefreshToken();
+                            refreshToken.Token = token;
+                            refreshToken.Expires = expiration;
+                            refreshToken.CreatedOn = DateTime.UtcNow;
+                            refreshToken.RevokedOn = null;
+                            _context.RefreshTokens.Update(refreshToken);
+                            await _context.SaveChangesAsync();
+                            var refreshTokenOps = TokenService.GetCookieOptions(7, false);
+                            Response.Cookies.Append("RefreshToken", refreshToken.Token, refreshTokenOps);
+                        }
+                        else
+                        {
+                            // refresh token is still valid. so do nothing
+                            var refreshTokenOps = TokenService.GetCookieOptions(7, false);
+                            Response.Cookies.Append("RefreshToken", refreshToken.Token, refreshTokenOps);
+                        }
+                    }
+                    else
+                    {
+                        // this refresh token doesn't belong to current user. so overwrite the token
+                        Response.Cookies.Delete("RefreshToken");
+                    }
+                }
+                else if (UserHasValidRefreshToken(user, refreshToken))
+                {
+                    SetRefreshTokenToCookies(refreshToken.Token);
+                }
+                else
+                {
+                    // user has valid no refresh token
+                    await AddNewRefreshTokenForUser(user);
+                }
 
                 res = ApiResponse.Create(
                     HttpStatusCode.OK,
@@ -168,6 +197,7 @@ namespace AuthApi.Controllers
                         Email = user.Email,
                         FirstName = user.FirstName,
                         LastName = user.LastName,
+                        accessToken = accessToken,
                     },
                     true,
                     "Sign in successfull"
@@ -181,6 +211,39 @@ namespace AuthApi.Controllers
                 res = ApiResponse.Create(HttpStatusCode.InternalServerError, msg: "An unexpected error occurred", errors: errs);
                 return StatusCode((int)HttpStatusCode.InternalServerError, res);
             }
+        }
+
+        private bool RefreshTokenBelongsToUser(User user, RefreshToken? refreshToken)
+        {
+            return refreshToken != null && refreshToken.UserId == user.Id;
+        }
+
+        private bool UserHasValidRefreshToken(User user, RefreshToken? refreshToken)
+        {
+            return refreshToken != null && refreshToken.UserId == user.Id && refreshToken.Expires > DateTime.UtcNow;
+        }
+
+        private void SetRefreshTokenToCookies(string token)
+        {
+            var refreshTokenOps = TokenService.GetCookieOptions(7, false);
+            Response.Cookies.Append("RefreshToken", token, refreshTokenOps);
+        }
+
+        private async Task<string> AddNewRefreshTokenForUser(User user)
+        {
+            (string token, DateTime expiration) = TokenService.GenerateRefreshToken();
+            RefreshToken newRefreshToken = new RefreshToken
+            {
+                Token = token,
+                Expires = expiration,
+                CreatedOn = DateTime.UtcNow,
+                RevokedOn = null,
+                UserId = user.Id
+            };
+            await _context.RefreshTokens.AddAsync(newRefreshToken);
+            await _context.SaveChangesAsync();
+            SetRefreshTokenToCookies(newRefreshToken.Token);
+            return newRefreshToken.Token;
         }
 
         [HttpGet("is-authenticated")]

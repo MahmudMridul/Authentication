@@ -4,3 +4,4 @@ export const signup = `${base}/signup`;
 export const signin = `${base}/signin`;
 export const signout = `${base}/signout`;
 export const isAuth = `${base}/is-authenticated`;
+export const getdata = `${base}/data`;

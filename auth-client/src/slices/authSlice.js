@@ -1,6 +1,4 @@
-import { signup } from "@/helpers/apis";
-import { signin } from "@/helpers/apis";
-import { isAuth } from "@/helpers/apis";
+import { getdata, signup, signin, isAuth } from "@/helpers/apis";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
@@ -74,6 +72,27 @@ export const checkAuth = createAsyncThunk("auth/checkAuth", async () => {
 	}
 });
 
+export const getData = createAsyncThunk("auth/getData", async () => {
+	try {
+		const res = await fetch(getdata, {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+			},
+			credentials: "include",
+		});
+		if (!res.ok) {
+			console.error(`https status error ${res.status} ${res.statusText}`);
+		}
+		const data = await res.json();
+		return data;
+	} catch (err) {
+		console.error("auth/getData", err);
+	}
+});
+
 export const authSlice = createSlice({
 	name: "auth",
 	initialState,
@@ -125,6 +144,17 @@ export const authSlice = createSlice({
 				console.log(action.payload);
 			})
 			.addCase(checkAuth.rejected, (state) => {
+				state.loading = false;
+			})
+
+			.addCase(getData.pending, (state) => {
+				state.loading = true;
+			})
+			.addCase(getData.fulfilled, (state, action) => {
+				state.loading = false;
+				console.log(action.payload);
+			})
+			.addCase(getData.rejected, (state) => {
 				state.loading = false;
 			});
 	},

@@ -1,4 +1,5 @@
-﻿using AuthApi.Models;
+﻿using AuthApi.Db;
+using AuthApi.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -59,6 +60,39 @@ namespace AuthApi.Services
                 SameSite = SameSiteMode.None,
                 Expires = isHours ? DateTime.UtcNow.AddHours(timeSpan) : DateTime.UtcNow.AddDays(timeSpan)
             };
+        }
+
+        public static bool RefreshTokenBelongsToUser(User user, RefreshToken? refreshToken)
+        {
+            return refreshToken != null && refreshToken.UserId == user.Id;
+        }
+
+        public static bool UserHasValidRefreshToken(User user, RefreshToken? refreshToken)
+        {
+            return refreshToken != null && refreshToken.Expires > DateTime.UtcNow;
+        }
+
+        public static void SetRefreshTokenToCookies(string token, HttpResponse response)
+        {
+            var refreshTokenOps = TokenService.GetCookieOptions(7, false);
+            response.Cookies.Append("RefreshToken", token, refreshTokenOps);
+        }
+
+        public static async Task<string> AddNewRefreshTokenForUser(User user, HttpResponse response, AuthContext _context)
+        {
+            (string token, DateTime expiration) = TokenService.GenerateRefreshToken();
+            RefreshToken newRefreshToken = new RefreshToken
+            {
+                Token = token,
+                Expires = expiration,
+                CreatedOn = DateTime.UtcNow,
+                RevokedOn = null,
+                UserId = user.Id
+            };
+            await _context.RefreshTokens.AddAsync(newRefreshToken);
+            await _context.SaveChangesAsync();
+            SetRefreshTokenToCookies(newRefreshToken.Token, response);
+            return newRefreshToken.Token;
         }
     }
 }

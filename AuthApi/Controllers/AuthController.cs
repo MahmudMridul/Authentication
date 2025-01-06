@@ -150,12 +150,12 @@ namespace AuthApi.Controllers
                 // there is a refresh token in the cookie
                 if (!string.IsNullOrEmpty(storedToken))
                 {
-                    if (RefreshTokenBelongsToUser(user, refreshToken))
+                    if (TokenService.RefreshTokenBelongsToUser(user, refreshToken))
                     {
-                        if (!UserHasValidRefreshToken(user, refreshToken))
+                        if (!TokenService.UserHasValidRefreshToken(user, refreshToken))
                         {
                             // refresh token has expired. generate a new one
-                            await AddNewRefreshTokenForUser(user);
+                            await TokenService.AddNewRefreshTokenForUser(user, Response, _context);
                         }
                     }
                     else
@@ -164,13 +164,13 @@ namespace AuthApi.Controllers
                         Response.Cookies.Delete("RefreshToken");
                         RefreshToken? refreshTokenForThisUser = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
 
-                        if (UserHasValidRefreshToken(user, refreshTokenForThisUser))
+                        if (TokenService.UserHasValidRefreshToken(user, refreshTokenForThisUser))
                         {
-                            SetRefreshTokenToCookies(refreshTokenForThisUser.Token);
+                            TokenService.SetRefreshTokenToCookies(refreshTokenForThisUser.Token, Response);
                         }
                         else
                         {
-                            await AddNewRefreshTokenForUser(user);
+                            await TokenService.AddNewRefreshTokenForUser(user, Response, _context);
                         }
                     }
                 }
@@ -179,13 +179,13 @@ namespace AuthApi.Controllers
                     // there is no refresh token set in the cookie
                     RefreshToken? refreshTokenForThisUser = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
 
-                    if (UserHasValidRefreshToken(user, refreshTokenForThisUser))
+                    if (TokenService.UserHasValidRefreshToken(user, refreshTokenForThisUser))
                     {
-                        SetRefreshTokenToCookies(refreshTokenForThisUser.Token);
+                        TokenService.SetRefreshTokenToCookies(refreshTokenForThisUser.Token, Response);
                     }
                     else
                     {
-                        await AddNewRefreshTokenForUser(user);
+                        await TokenService.AddNewRefreshTokenForUser(user, Response, _context);
                     }
                 }
 
@@ -212,39 +212,6 @@ namespace AuthApi.Controllers
                 res = ApiResponse.Create(HttpStatusCode.InternalServerError, msg: "An unexpected error occurred", errors: errs);
                 return StatusCode((int)HttpStatusCode.InternalServerError, res);
             }
-        }
-
-        private bool RefreshTokenBelongsToUser(User user, RefreshToken? refreshToken)
-        {
-            return refreshToken != null && refreshToken.UserId == user.Id;
-        }
-
-        private bool UserHasValidRefreshToken(User user, RefreshToken? refreshToken)
-        {
-            return refreshToken != null && refreshToken.Expires > DateTime.UtcNow;
-        }
-
-        private void SetRefreshTokenToCookies(string token)
-        {
-            var refreshTokenOps = TokenService.GetCookieOptions(7, false);
-            Response.Cookies.Append("RefreshToken", token, refreshTokenOps);
-        }
-
-        private async Task<string> AddNewRefreshTokenForUser(User user)
-        {
-            (string token, DateTime expiration) = TokenService.GenerateRefreshToken();
-            RefreshToken newRefreshToken = new RefreshToken
-            {
-                Token = token,
-                Expires = expiration,
-                CreatedOn = DateTime.UtcNow,
-                RevokedOn = null,
-                UserId = user.Id
-            };
-            await _context.RefreshTokens.AddAsync(newRefreshToken);
-            await _context.SaveChangesAsync();
-            SetRefreshTokenToCookies(newRefreshToken.Token);
-            return newRefreshToken.Token;
         }
 
         [HttpGet("is-authenticated")]

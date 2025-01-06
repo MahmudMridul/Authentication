@@ -1,6 +1,8 @@
 ﻿using AuthApi.Db;
 using AuthApi.Models;
+using Azure;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -93,6 +95,29 @@ namespace AuthApi.Services
             await _context.SaveChangesAsync();
             SetRefreshTokenToCookies(newRefreshToken.Token, response);
             return newRefreshToken.Token;
+        }
+
+        public static async Task<bool> HandleNoStoredToken(User user, AuthContext _context, HttpResponse response)
+        {
+            try
+            {
+                RefreshToken? refreshTokenForThisUser = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
+
+                if (TokenService.UserHasValidRefreshToken(user, refreshTokenForThisUser))
+                {
+                    TokenService.SetRefreshTokenToCookies(refreshTokenForThisUser.Token, response);
+                    return true;
+                }
+                else
+                {
+                    await TokenService.AddNewRefreshTokenForUser(user, response, _context);
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
         }
     }
 }

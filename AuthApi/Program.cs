@@ -3,6 +3,7 @@ using AuthApi.Db;
 using AuthApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -16,7 +17,7 @@ namespace AuthApi
             var builder = WebApplication.CreateBuilder(args);
 
             #region Controller Configuration
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(op => op.Filters.Add(new ProducesAttribute("application/json")));
             #endregion
 
             #region Database Configuration

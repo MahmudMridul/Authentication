@@ -9,6 +9,7 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Microsoft.AspNetCore.Authorization;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace AuthApi.Controllers
 {
@@ -147,46 +148,24 @@ namespace AuthApi.Controllers
                 string? storedToken = Request.Cookies["RefreshToken"];
                 RefreshToken? refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Token == storedToken);
 
-                // there is a refresh token in the cookie
                 if (!string.IsNullOrEmpty(storedToken))
                 {
                     if (TokenService.RefreshTokenBelongsToUser(user, refreshToken))
                     {
                         if (!TokenService.UserHasValidRefreshToken(user, refreshToken))
                         {
-                            // refresh token has expired. generate a new one
                             await TokenService.AddNewRefreshTokenForUser(user, Response, _context);
                         }
                     }
                     else
                     {
-                        // this refresh token doesn't belong to current user. so overwrite the token
                         Response.Cookies.Delete("RefreshToken");
-                        RefreshToken? refreshTokenForThisUser = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
-
-                        if (TokenService.UserHasValidRefreshToken(user, refreshTokenForThisUser))
-                        {
-                            TokenService.SetRefreshTokenToCookies(refreshTokenForThisUser.Token, Response);
-                        }
-                        else
-                        {
-                            await TokenService.AddNewRefreshTokenForUser(user, Response, _context);
-                        }
+                        await TokenService.HandleNoStoredToken(user, _context, Response);
                     }
                 }
                 else
                 {
-                    // there is no refresh token set in the cookie
-                    RefreshToken? refreshTokenForThisUser = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
-
-                    if (TokenService.UserHasValidRefreshToken(user, refreshTokenForThisUser))
-                    {
-                        TokenService.SetRefreshTokenToCookies(refreshTokenForThisUser.Token, Response);
-                    }
-                    else
-                    {
-                        await TokenService.AddNewRefreshTokenForUser(user, Response, _context);
-                    }
+                    await TokenService.HandleNoStoredToken(user, _context, Response);
                 }
 
                 res = ApiResponse.Create(
@@ -246,8 +225,8 @@ namespace AuthApi.Controllers
             }
         }
 
-        [HttpPost("signout")]
         [Authorize]
+        [HttpPost("signout")]
         public async Task<ActionResult<ApiResponse>> Signout()
         {
             ApiResponse res;
@@ -284,6 +263,37 @@ namespace AuthApi.Controllers
                     msg: "An error occurred during sign out",
                     errors: new List<string> { ex.Message, ex.StackTrace }
                 );
+                return StatusCode((int)HttpStatusCode.InternalServerError, res);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("data")]
+        public async Task<ActionResult<ApiResponse>> GetData()
+        {
+            ApiResponse res;
+            try
+            {
+                IList<string> data = new List<string>()
+                {
+                    "Data 1",
+                    "Data 2",
+                    "Data 3",
+                    "Data 4",
+                    "Data 5",
+                };
+                res = ApiResponse.Create(
+                    HttpStatusCode.OK,
+                    data,
+                    success: true,
+                    msg: "Data fetched successfully"
+                );
+                return Ok(res);
+            }
+            catch (Exception e)
+            {
+                List<string> errs = new List<string> { e.Message, e.StackTrace };
+                res = ApiResponse.Create(HttpStatusCode.InternalServerError, msg: "An unexpected error occurred", errors: errs);
                 return StatusCode((int)HttpStatusCode.InternalServerError, res);
             }
         }

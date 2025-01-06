@@ -48,8 +48,7 @@ export default function Signin() {
 			});
 
 			if (res.payload.success) {
-				// setIsAuthenticated(true);
-				console.log("Signin successful");
+				localStorage.setItem("accessToken", res.payload.data.accessToken);
 				navigate("/home");
 			} else {
 				navigate("/");

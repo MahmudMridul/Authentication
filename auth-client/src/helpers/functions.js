@@ -1,3 +1,5 @@
+import { jwtDecode } from "jwt-decode";
+
 export function isValidName(name) {
 	// Check if the name contains only alphabets and spaces
 	const hasAlphabetsAndSpaces = /^[A-Za-z\s]+$/.test(name);
@@ -51,4 +53,12 @@ export function hasSpecialChar(str) {
 
 export function hasSpace(str) {
 	return /\s/.test(str);
+}
+
+export function isTokenExpired(token) {
+	if (!token) return true;
+	const decoded = jwtDecode(token);
+	const now = Date.now().valueOf() / 1000;
+	console.log("expired", decoded.exp < now);
+	return decoded.exp < now;
 }

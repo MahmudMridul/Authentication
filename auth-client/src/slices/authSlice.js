@@ -5,8 +5,6 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
 	loading: false,
-
-	isAuthenticated: false,
 };
 
 export const signUp = createAsyncThunk("auth/signup", async (payload) => {

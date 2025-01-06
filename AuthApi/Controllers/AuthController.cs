@@ -145,47 +145,48 @@ namespace AuthApi.Controllers
 
                 string accessToken = await TokenService.GenerateJwtToken(user, _userManager, _config);
                 string? storedToken = Request.Cookies["RefreshToken"];
-                RefreshToken? refreshToken = await _context.RefreshTokens.Include(r => r.User).FirstOrDefaultAsync(r => r.Token == storedToken);
+                RefreshToken? refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Token == storedToken);
 
                 // there is a refresh token in the cookie
                 if (!string.IsNullOrEmpty(storedToken))
                 {
                     if (RefreshTokenBelongsToUser(user, refreshToken))
                     {
-                        if (refreshToken.Expires < DateTime.UtcNow)
+                        if (!UserHasValidRefreshToken(user, refreshToken))
                         {
                             // refresh token has expired. generate a new one
-                            (string token, DateTime expiration) = TokenService.GenerateRefreshToken();
-                            refreshToken.Token = token;
-                            refreshToken.Expires = expiration;
-                            refreshToken.CreatedOn = DateTime.UtcNow;
-                            refreshToken.RevokedOn = null;
-                            _context.RefreshTokens.Update(refreshToken);
-                            await _context.SaveChangesAsync();
-                            var refreshTokenOps = TokenService.GetCookieOptions(7, false);
-                            Response.Cookies.Append("RefreshToken", refreshToken.Token, refreshTokenOps);
-                        }
-                        else
-                        {
-                            // refresh token is still valid. so do nothing
-                            var refreshTokenOps = TokenService.GetCookieOptions(7, false);
-                            Response.Cookies.Append("RefreshToken", refreshToken.Token, refreshTokenOps);
+                            await AddNewRefreshTokenForUser(user);
                         }
                     }
                     else
                     {
                         // this refresh token doesn't belong to current user. so overwrite the token
                         Response.Cookies.Delete("RefreshToken");
+                        RefreshToken? refreshTokenForThisUser = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
+
+                        if (UserHasValidRefreshToken(user, refreshTokenForThisUser))
+                        {
+                            SetRefreshTokenToCookies(refreshTokenForThisUser.Token);
+                        }
+                        else
+                        {
+                            await AddNewRefreshTokenForUser(user);
+                        }
                     }
-                }
-                else if (UserHasValidRefreshToken(user, refreshToken))
-                {
-                    SetRefreshTokenToCookies(refreshToken.Token);
                 }
                 else
                 {
-                    // user has valid no refresh token
-                    await AddNewRefreshTokenForUser(user);
+                    // there is no refresh token set in the cookie
+                    RefreshToken? refreshTokenForThisUser = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
+
+                    if (UserHasValidRefreshToken(user, refreshTokenForThisUser))
+                    {
+                        SetRefreshTokenToCookies(refreshTokenForThisUser.Token);
+                    }
+                    else
+                    {
+                        await AddNewRefreshTokenForUser(user);
+                    }
                 }
 
                 res = ApiResponse.Create(
@@ -220,7 +221,7 @@ namespace AuthApi.Controllers
 
         private bool UserHasValidRefreshToken(User user, RefreshToken? refreshToken)
         {
-            return refreshToken != null && refreshToken.UserId == user.Id && refreshToken.Expires > DateTime.UtcNow;
+            return refreshToken != null && refreshToken.Expires > DateTime.UtcNow;
         }
 
         private void SetRefreshTokenToCookies(string token)

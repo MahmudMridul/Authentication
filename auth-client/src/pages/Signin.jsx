@@ -49,6 +49,8 @@ export default function Signin() {
 
 			if (res.payload.success) {
 				localStorage.setItem("accessToken", res.payload.data.accessToken);
+				localStorage.setItem("userName", res.payload.data.userName);
+				localStorage.setItem("email", res.payload.data.email);
 				navigate("/home");
 			} else {
 				navigate("/");

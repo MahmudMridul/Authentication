@@ -63,32 +63,32 @@ namespace AuthApi.Services
             };
         }
 
-        public static bool RefreshTokenBelongsToUser(User user, RefreshToken? refreshToken)
+        public static bool RefreshTokenBelongsToUser(string storedToken, RefreshToken? refreshToken)
         {
-            return refreshToken != null && refreshToken.UserId == user.Id;
+            return refreshToken != null && storedToken != null && refreshToken.Token == storedToken;
         }
 
-        public static bool UserHasValidRefreshToken(User user, RefreshToken? refreshToken)
+        public static bool UserHasValidRefreshToken(RefreshToken? refreshToken)
         {
             return refreshToken != null && refreshToken.Expires > DateTime.UtcNow;
         }
 
         public static void SetRefreshTokenToCookies(string token, HttpResponse response)
         {
-            var refreshTokenOps = TokenService.GetCookieOptions(7, false);
+            var refreshTokenOps = GetCookieOptions(7, false);
             response.Cookies.Append("RefreshToken", token, refreshTokenOps);
         }
 
-        public static async Task<string> AddNewRefreshTokenForUser(User user, HttpResponse response, AuthContext _context)
+        public static async Task<string> AddNewRefreshTokenForUser(string userId, HttpResponse response, AuthContext _context)
         {
-            (string token, DateTime expiration) = TokenService.GenerateRefreshToken();
+            (string token, DateTime expiration) = GenerateRefreshToken();
             RefreshToken newRefreshToken = new RefreshToken
             {
                 Token = token,
                 Expires = expiration,
                 CreatedOn = DateTime.UtcNow,
                 RevokedOn = null,
-                UserId = user.Id
+                UserId = userId
             };
             await _context.RefreshTokens.AddAsync(newRefreshToken);
             await _context.SaveChangesAsync();
@@ -96,20 +96,20 @@ namespace AuthApi.Services
             return newRefreshToken.Token;
         }
 
-        public static async Task<bool> HandleNoStoredToken(User user, AuthContext _context, HttpResponse response)
+        public static async Task<bool> HandleNoStoredToken(string userId, RefreshToken? refreshToken, AuthContext _context, HttpResponse response)
         {
             try
             {
-                RefreshToken? refreshTokenForThisUser = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
-
-                if (TokenService.UserHasValidRefreshToken(user, refreshTokenForThisUser))
+                if (UserHasValidRefreshToken(refreshToken))
                 {
-                    TokenService.SetRefreshTokenToCookies(refreshTokenForThisUser.Token, response);
+                    SetRefreshTokenToCookies(refreshToken.Token, response);
                     return true;
                 }
                 else
                 {
-                    await TokenService.AddNewRefreshTokenForUser(user, response, _context);
+                    await 
+                        
+                        AddNewRefreshTokenForUser(userId, response, _context);
                     return true;
                 }
             }

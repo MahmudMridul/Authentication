@@ -9,7 +9,6 @@ using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 using Microsoft.AspNetCore.Authorization;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 
 namespace AuthApi.Controllers
 {
@@ -146,26 +145,26 @@ namespace AuthApi.Controllers
 
                 string accessToken = await TokenService.GenerateJwtToken(user, _userManager, _config);
                 string? storedToken = Request.Cookies["RefreshToken"];
-                RefreshToken? refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.Token == storedToken);
+                RefreshToken? refreshToken = await _context.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == user.Id);
 
                 if (!string.IsNullOrEmpty(storedToken))
                 {
-                    if (TokenService.RefreshTokenBelongsToUser(user, refreshToken))
+                    if (TokenService.RefreshTokenBelongsToUser(storedToken, refreshToken))
                     {
-                        if (!TokenService.UserHasValidRefreshToken(user, refreshToken))
+                        if (!TokenService.UserHasValidRefreshToken(refreshToken))
                         {
-                            await TokenService.AddNewRefreshTokenForUser(user, Response, _context);
+                            await TokenService.AddNewRefreshTokenForUser(user.Id, Response, _context);
                         }
                     }
                     else
                     {
                         Response.Cookies.Delete("RefreshToken");
-                        await TokenService.HandleNoStoredToken(user, _context, Response);
+                        await TokenService.HandleNoStoredToken(user.Id, refreshToken, _context, Response);
                     }
                 }
                 else
                 {
-                    await TokenService.HandleNoStoredToken(user, _context, Response);
+                    await TokenService.HandleNoStoredToken(user.Id, refreshToken, _context, Response);
                 }
 
                 res = ApiResponse.Create(
@@ -226,7 +225,7 @@ namespace AuthApi.Controllers
         }
 
         [Authorize]
-        [HttpPost("signout")]
+        [HttpDelete("signout")]
         public async Task<ActionResult<ApiResponse>> Signout()
         {
             ApiResponse res;
@@ -242,11 +241,14 @@ namespace AuthApi.Controllers
                     return Unauthorized(res);
                 }
 
-                //user.RefreshToken = "";
-                //user.RefreshTokenExpiryTime = DateTime.MinValue;
+                List<RefreshToken> tokens = await _context.RefreshTokens.Where(t => t.UserId == user.Id).ToListAsync();
+                if (tokens.Any())
+                {
+                    _context.RefreshTokens.RemoveRange(tokens);
+                    await _context.SaveChangesAsync();
+                }
+                Response.Cookies.Delete("RefreshToken");
 
-                _context.Users.Update(user);
-                await _context.SaveChangesAsync();
                 await _signInManager.SignOutAsync();
 
                 res = ApiResponse.Create(

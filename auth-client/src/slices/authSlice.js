@@ -1,8 +1,9 @@
-import { getdata, signup, signin, isAuth } from "@/helpers/apis";
+import { getdata, signup, signin, signout, isAuth } from "@/helpers/apis";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
 	loading: false,
+	signedInUser: {},
 };
 
 export const signUp = createAsyncThunk("auth/signup", async (payload) => {
@@ -47,6 +48,29 @@ export const signIn = createAsyncThunk("auth/signin", async (payload) => {
 		return data;
 	} catch (err) {
 		console.error("auth/signIn", err);
+	}
+});
+
+export const signOut = createAsyncThunk("auth/signOut", async () => {
+	try {
+		const res = await fetch(signout, {
+			method: "DELETE",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+				Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+			},
+			credentials: "include",
+		});
+
+		if (!res.ok) {
+			console.error(`https status error ${res.status} ${res.statusText}`);
+		}
+
+		const data = await res.json();
+		return data;
+	} catch (err) {
+		console.error("auth/signOut", err);
 	}
 });
 
@@ -129,7 +153,7 @@ export const authSlice = createSlice({
 			.addCase(signIn.fulfilled, (state, action) => {
 				state.loading = false;
 				if (action.payload.success) {
-					state.isAuthenticated = true;
+					state.signedInUser = action.payload.data;
 				}
 			})
 			.addCase(signIn.rejected, (state) => {
@@ -155,6 +179,17 @@ export const authSlice = createSlice({
 				console.log(action.payload);
 			})
 			.addCase(getData.rejected, (state) => {
+				state.loading = false;
+			})
+
+			.addCase(signOut.pending, (state) => {
+				state.loading = true;
+			})
+			.addCase(signOut.fulfilled, (state, action) => {
+				state.loading = false;
+				console.log(action.payload);
+			})
+			.addCase(signOut.rejected, (state) => {
 				state.loading = false;
 			});
 	},

@@ -8,32 +8,31 @@ This project is a simple authentication system designed to demonstrate the imple
 
 ### Backend
 
-- **.NET Web API**
-- **Entity Framework Core**
-- **ASP.NET Identity**
-- **SQL Server**
+- `.NET Web API`
+- `Entity Framework Core`
+- `ASP.NET Identity`
+- `SQL Server`
 
 ### Frontend
 
-- **React**
-- **shadcn UI**
-- **Redux Toolkit**
+- `React`
+- `shadcn UI`
+- `Redux Toolkit`
 
 ## Features
 
-- **User Signup**: Users can sign up with a valid email and password.
-- **User Signin**: Registered users can log in with their credentials.
+- User signup
+- User signin
+- User signout
 
-## Project Structure
+[//]: <> (## Setup and Installation)
 
-## Setup and Installation
+[//]: <> (### Prerequisites)
 
-### Prerequisites
+[//]: <> (### Backend Setup)
 
-### Backend Setup
+[//]: <> (### Frontend Setup)
 
-### Frontend Setup
+[//]: <> (## API Endpoints)
 
-## API Endpoints
-
-## Future Improvements
+[//]: <> (## Future Improvements)

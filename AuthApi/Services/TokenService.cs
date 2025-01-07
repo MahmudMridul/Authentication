@@ -79,6 +79,17 @@ namespace AuthApi.Services
             response.Cookies.Append("RefreshToken", token, refreshTokenOps);
         }
 
+        public static void DeleteRefreshTokenCookie(HttpResponse response)
+        {
+            var options = new CookieOptions()
+            {
+                HttpOnly = true,       // Prevents access via JavaScript
+                Secure = true,         // Ensures the cookie is only sent over HTTPS
+                SameSite = SameSiteMode.None,
+            };
+            response.Cookies.Delete("RefreshToken", options);
+        }
+
         public static async Task<string> AddNewRefreshTokenForUser(string userId, HttpResponse response, AuthContext _context)
         {
             (string token, DateTime expiration) = GenerateRefreshToken();

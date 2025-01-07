@@ -158,7 +158,7 @@ namespace AuthApi.Controllers
                     }
                     else
                     {
-                        Response.Cookies.Delete("RefreshToken");
+                        TokenService.DeleteRefreshTokenCookie(Response);
                         await TokenService.HandleNoStoredToken(user.Id, refreshToken, _context, Response);
                     }
                 }
@@ -247,7 +247,7 @@ namespace AuthApi.Controllers
                     _context.RefreshTokens.RemoveRange(tokens);
                     await _context.SaveChangesAsync();
                 }
-                Response.Cookies.Delete("RefreshToken");
+                TokenService.DeleteRefreshTokenCookie(Response);
 
                 await _signInManager.SignOutAsync();
 
